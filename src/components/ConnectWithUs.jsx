@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { observer } from "mobx-react";
-import { Container, Typography, Box, IconButton, Card, CardMedia, CardContent, CircularProgress, Alert, Tabs, Tab } from "@mui/material";
+import { Container, Typography, Box, IconButton, Card, CardMedia, CardContent, CircularProgress } from "@mui/material";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import FavoriteIcon from "@mui/icons-material/Favorite";
@@ -9,70 +9,16 @@ import { useSocialMediaStore } from "../stores/rootStores.js";
 
 const ConnectWithUs = observer(() => {
 	const socialMediaStore = useSocialMediaStore();
-	const [selectedTab, setSelectedTab] = useState(0); // 0 = All, 1 = Instagram, 2 = Facebook
 
 	// Get API credentials from environment variables
 	const INSTAGRAM_TOKEN = import.meta.env.VITE_INSTAGRAM_ACCESS_TOKEN;
 	const INSTAGRAM_USER_ID = import.meta.env.VITE_INSTAGRAM_USER_ID;
-	const FACEBOOK_TOKEN = import.meta.env.VITE_FACEBOOK_ACCESS_TOKEN;
-	const FACEBOOK_PAGE_ID = import.meta.env.VITE_FACEBOOK_PAGE_ID;
 
 	useEffect(() => {
-		// Debug: Check if environment variables are loaded
-		console.log("Environment Variables Check:", {
-			hasInstagramToken: !!INSTAGRAM_TOKEN,
-			hasInstagramUserId: !!INSTAGRAM_USER_ID,
-			hasFacebookToken: !!FACEBOOK_TOKEN,
-			hasFacebookPageId: !!FACEBOOK_PAGE_ID,
-			instagramTokenPrefix: INSTAGRAM_TOKEN?.substring(0, 10),
-			facebookTokenPrefix: FACEBOOK_TOKEN?.substring(0, 10)
-		});
-		
-		// Fetch both Instagram and Facebook posts
 		socialMediaStore.fetchInstagramPosts(INSTAGRAM_TOKEN, INSTAGRAM_USER_ID);
-		socialMediaStore.fetchFacebookPosts(FACEBOOK_TOKEN, FACEBOOK_PAGE_ID);
-	}, [socialMediaStore, INSTAGRAM_TOKEN, INSTAGRAM_USER_ID, FACEBOOK_TOKEN, FACEBOOK_PAGE_ID]);
+	}, [socialMediaStore, INSTAGRAM_TOKEN, INSTAGRAM_USER_ID]);
 
-	// Load more posts function
-	const handleLoadMore = () => {
-		if (selectedTab === 1) {
-			socialMediaStore.loadMoreInstagramPosts();
-		} else if (selectedTab === 2) {
-			socialMediaStore.loadMoreFacebookPosts();
-		} else {
-			// For "All" tab, load more based on which has more posts
-			if (socialMediaStore.instagramHasMore) {
-				socialMediaStore.loadMoreInstagramPosts();
-			}
-			if (socialMediaStore.facebookHasMore) {
-				socialMediaStore.loadMoreFacebookPosts();
-			}
-		}
-	};
-
-	// Handle tab change
-	const handleTabChange = (event, newValue) => {
-		setSelectedTab(newValue);
-	};
-
-	// Filter posts based on selected tab
-	const getFilteredPosts = () => {
-		if (selectedTab === 0) {
-			return socialMediaStore.allPosts; // All posts
-		} else if (selectedTab === 1) {
-			return socialMediaStore.instagramPosts; // Instagram only
-		} else {
-			return socialMediaStore.facebookPosts; // Facebook only
-		}
-	};
-
-	const filteredPosts = getFilteredPosts();
-
-	// Debug logging
-	console.log("Selected Tab:", selectedTab);
-	console.log("Instagram Posts:", socialMediaStore.instagramPosts.length);
-	console.log("Facebook Posts:", socialMediaStore.facebookPosts.length);
-	console.log("Filtered Posts:", filteredPosts.length);
+	const posts = socialMediaStore.instagramPosts;
 
 	return (
 		<Box sx={{ py: { xs: 4, md: 8 }, bgcolor: "white", width: "100%", overflow: "hidden" }}>
@@ -142,50 +88,6 @@ const ConnectWithUs = observer(() => {
 					</IconButton>
 				</Box>
 
-				{/* Tabs for filtering posts */}
-				<Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
-					<Tabs 
-						value={selectedTab} 
-						onChange={handleTabChange}
-						sx={{
-							"& .MuiTab-root": {
-								color: "#666",
-								fontWeight: 500,
-								fontSize: "1rem",
-								textTransform: "none",
-								minWidth: { xs: 100, sm: 120 },
-								"&.Mui-selected": {
-									color: "#3B6866",
-									fontWeight: 600,
-								}
-							},
-							"& .MuiTabs-indicator": {
-								backgroundColor: "#3B6866",
-								height: 3,
-							}
-						}}
-					>
-						<Tab 
-							label="All Posts" 
-							icon={<Box sx={{ display: "flex", gap: 0.5 }}>
-								<InstagramIcon sx={{ fontSize: "1.2rem" }} />
-								<FacebookIcon sx={{ fontSize: "1.2rem" }} />
-							</Box>}
-							iconPosition="start"
-						/>
-						<Tab 
-							label="Instagram" 
-							icon={<InstagramIcon />}
-							iconPosition="start"
-						/>
-						<Tab 
-							label="Facebook" 
-							icon={<FacebookIcon />}
-							iconPosition="start"
-						/>
-					</Tabs>
-				</Box>
-
 				{/* Loading State */}
 				{socialMediaStore.loading && (
 					<Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
@@ -193,24 +95,8 @@ const ConnectWithUs = observer(() => {
 					</Box>
 				)}
 
-				{/* Error State */}
-				{socialMediaStore.error && (
-					<Alert severity="warning" sx={{ mb: 4 }}>
-						{socialMediaStore.error}
-						<Typography variant="body2" sx={{ mt: 1 }}>
-							To use Instagram API:
-							<ol style={{ marginTop: 8, paddingLeft: 20 }}>
-								<li>Create a Facebook App at <a href="https://developers.facebook.com" target="_blank" rel="noopener noreferrer">developers.facebook.com</a></li>
-								<li>Add Instagram Basic Display product</li>
-								<li>Generate an Access Token and User ID</li>
-								<li>Add them to your .env file as VITE_INSTAGRAM_ACCESS_TOKEN and VITE_INSTAGRAM_USER_ID</li>
-							</ol>
-						</Typography>
-					</Alert>
-				)}
-
-				{/* Social Media Posts Grid */}
-				{!socialMediaStore.loading && !socialMediaStore.error && filteredPosts.length > 0 && (
+				{/* Instagram Posts Grid */}
+				{!socialMediaStore.loading && posts.length > 0 && (
 					<Box 
 						sx={{ 
 							display: "grid",
@@ -224,7 +110,7 @@ const ConnectWithUs = observer(() => {
 							px: { xs: 1, sm: 0 }
 						}}
 					>
-						{filteredPosts.map((post) => (
+						{posts.map((post) => (
 							<Card 
 								key={post.id}
 								component="a"
@@ -243,28 +129,25 @@ const ConnectWithUs = observer(() => {
 								}}
 							>
 								{/* Instagram Badge */}
-							<Box 
-								sx={{ 
-									position: "absolute",
-									top: 10,
-									right: 10,
-									bgcolor: post.platform === "instagram" ? "#E4405F" : "#1877F2",
-									borderRadius: "50%",
-									width: 32,
-									height: 32,
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "center",
-									zIndex: 1,
-									boxShadow: "0 2px 8px rgba(0,0,0,0.2)"
-								}}
-							>
-								{post.platform === "instagram" ? (
+								<Box 
+									sx={{ 
+										position: "absolute",
+										top: 10,
+										right: 10,
+										bgcolor: "#E4405F",
+										borderRadius: "50%",
+										width: 32,
+										height: 32,
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "center",
+										zIndex: 1,
+										boxShadow: "0 2px 8px rgba(0,0,0,0.2)"
+									}}
+								>
 									<InstagramIcon sx={{ color: "white", fontSize: "1rem" }} />
-								) : (
-									<FacebookIcon sx={{ color: "white", fontSize: "1rem" }} />
-								)}
-							</Box>								{/* Post Image/Video */}
+								</Box>
+								{/* Post Image/Video */}
 								<CardMedia
 									component="img"
 									height="250"
@@ -329,60 +212,49 @@ const ConnectWithUs = observer(() => {
 				)}
 
 				{/* No Posts Message */}
-				{!socialMediaStore.loading && !socialMediaStore.error && filteredPosts.length === 0 && (
+				{!socialMediaStore.loading && posts.length === 0 && (
 					<Box sx={{ textAlign: "center", py: 8 }}>
 						<Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
 							No posts available
 						</Typography>
 						<Typography variant="body2" color="text.secondary">
-							{selectedTab === 1 && "Instagram posts will appear here once configured."}
-							{selectedTab === 2 && "Facebook posts will appear here once configured."}
-							{selectedTab === 0 && "Connect your social media accounts to display posts."}
+							Instagram posts will appear here once configured.
 						</Typography>
 					</Box>
 				)}
 
-				{/* Load More Button */}
-				{!socialMediaStore.loading && !socialMediaStore.error && (
-					(selectedTab === 0 && (socialMediaStore.instagramHasMore || socialMediaStore.facebookHasMore)) ||
-					(selectedTab === 1 && socialMediaStore.instagramHasMore) ||
-					(selectedTab === 2 && socialMediaStore.facebookHasMore)
-				) && (
+				{/* View More Button */}
+				{!socialMediaStore.loading && posts.length > 0 && (
 					<Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-						<button
-							onClick={handleLoadMore}
-							disabled={socialMediaStore.loadingMore}
+						<a
+							href="https://www.instagram.com/d.c.m.school/"
+							target="_blank"
+							rel="noopener noreferrer"
 							style={{
 								padding: "12px 32px",
 								fontSize: "1rem",
 								fontWeight: 500,
 								color: "white",
-								backgroundColor: socialMediaStore.loadingMore ? "#9E9E9E" : "#3B6866",
+								backgroundColor: "#3B6866",
 								border: "none",
 								borderRadius: "8px",
-								cursor: socialMediaStore.loadingMore ? "not-allowed" : "pointer",
+								cursor: "pointer",
 								transition: "all 0.3s",
 								boxShadow: "0 2px 8px rgba(59, 104, 102, 0.2)",
 								display: "flex",
 								alignItems: "center",
-								gap: "8px"
+								gap: "8px",
+								textDecoration: "none"
 							}}
 							onMouseEnter={(e) => {
-								if (!socialMediaStore.loadingMore) e.target.style.backgroundColor = "#2d5250";
+								e.target.style.backgroundColor = "#2d5250";
 							}}
 							onMouseLeave={(e) => {
-								if (!socialMediaStore.loadingMore) e.target.style.backgroundColor = "#3B6866";
+								e.target.style.backgroundColor = "#3B6866";
 							}}
 						>
-							{socialMediaStore.loadingMore ? (
-								<>
-									<CircularProgress size={20} sx={{ color: "white" }} />
-									Loading...
-								</>
-							) : (
-								"Load More Posts"
-							)}
-						</button>
+							View More
+						</a>
 					</Box>
 				)}
 
