@@ -1,0 +1,36 @@
+{
+	"name": "dcmhs-static",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"preview": "vite preview",
+		"lint": "biome lint .",
+		"format": "biome format . --write"
+	},
+	"dependencies": {
+		"@emotion/react": "^11.13.0",
+		"@emotion/styled": "^11.13.0",
+		"@mui/icons-material": "^7.3.2",
+		"@mui/material": "^7.3.2",
+		"@mui/utils": "^7.3.2",
+		"@mui/x-date-pickers": "^8.19.0",
+		"date-fns": "^4.1.0",
+		"mobx": "^6.13.7",
+		"mobx-react": "^9.2.0",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
+		"react-router-dom": "^6.30.1",
+		"react-social-media-embed": "^2.5.18"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.2.4",
+		"@vitejs/plugin-react": "^5.0.0",
+		"vite": "^7.1.5"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	}
+}
