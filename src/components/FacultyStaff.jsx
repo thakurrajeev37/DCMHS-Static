@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Container, Typography, Box, Card, CardContent, CardMedia, Grid } from "@mui/material";
+import { observer } from "mobx-react";
+import { Container, Typography, Box, Card, CardContent, CardMedia, Grid, CircularProgress, Alert } from "@mui/material";
 import SchoolIcon from "@mui/icons-material/School";
-import StarIcon from "@mui/icons-material/Star";
-import PeopleIcon from "@mui/icons-material/People";
-import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import SupportAgentIcon from "@mui/icons-material/SupportAgent";
+import { useFacultyStore } from "../stores/rootStores.js";
 
-const FacultyStaff = () => {
+const FacultyStaff = observer(() => {
+	const facultyStore = useFacultyStore();
 	const [scrollY, setScrollY] = useState(0);
 	const [isVisible, setIsVisible] = useState(false);
 	const sectionRef = useRef(null);
@@ -36,85 +35,28 @@ const FacultyStaff = () => {
 
 	const parallaxOffset = (scrollY - offsetTop) * 0.1;
 
-	// Hierarchy Data
-	const chairman = {
-		name: "Sub. Diwan Chand",
-		role: "Chairman",
-		qualification: "Ph.D, M.Ed",
-		experience: "25+ Years",
-		image: "/founder.JPG",
-		description: "Visionary leader guiding the institution towards excellence"
-	};
+	// Show loading state
+	if (facultyStore.loading) {
+		return (
+			<Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "40vh" }}>
+				<CircularProgress />
+			</Box>
+		);
+	}
 
-	const principal = {
-		name: "Reena Rani",
-		role: "Principal",
-		qualification: "M.Ed, B.Ed",
-		experience: "20+ Years",
-		image: "/Principal.jpeg",
-		description: "Leading with vision and dedication to excellence in education"
-	};
+	// Show error state
+	if (facultyStore.error) {
+		return (
+			<Container sx={{ py: 4 }}>
+				<Alert severity="error">{facultyStore.error}</Alert>
+			</Container>
+		);
+	}
 
-	const vicePrincipal = {
-		name: "Sandeep Kumar",
-		role: "Vice Principal",
-		qualification: "M.A, B.Ed",
-		experience: "15+ Years",
-		image: "/VicePrincipal.JPG",
-		description: "Supporting academic excellence and student development"
-	};
-
-	// Teachers Category
-	const teachers = [
-		{
-			name: "Head Teacher - Primary",
-			role: "Head Teacher",
-			qualification: "M.Ed, B.Ed",
-			experience: "12+ Years",
-			image: "/headTeacher.jpg",
-			description: "Expert in early childhood education"
-		},
-		{
-			name: "Senior Teacher - Science",
-			role: "Science Department",
-			qualification: "M.Sc, B.Ed",
-			experience: "10+ Years",
-			image: "/teacher-2.jpg",
-			description: "Making science engaging"
-		},
-		{
-			name: "Senior Teacher - Mathematics",
-			role: "Mathematics Department",
-			qualification: "M.Sc, B.Ed",
-			experience: "10+ Years",
-			image: "/teacher-3.jpg",
-			description: "Building strong foundations"
-		},
-		{
-			name: "Senior Teacher - English",
-			role: "English Department",
-			qualification: "M.A, B.Ed",
-			experience: "8+ Years",
-			image: "/teacher-4.jpg",
-			description: "Fostering language skills"
-		},
-		{
-			name: "Teacher - Social Studies",
-			role: "Social Studies Department",
-			qualification: "M.A, B.Ed",
-			experience: "7+ Years",
-			image: "/teacher-5.jpg",
-			description: "Making history come alive"
-		},
-		{
-			name: "Teacher - Computer Science",
-			role: "IT Department",
-			qualification: "MCA, B.Ed",
-			experience: "6+ Years",
-			image: "/teacher-6.jpg",
-			description: "Preparing for digital future"
-		}
-	];
+	const chairman = facultyStore.chairman;
+	const principal = facultyStore.principal;
+	const vicePrincipal = facultyStore.vicePrincipal;
+	const teachers = facultyStore.teachers;
 
 
 	return (
@@ -637,6 +579,6 @@ const FacultyStaff = () => {
 			</Container>
 		</Box>
 	);
-};
+});
 
 export default FacultyStaff;
